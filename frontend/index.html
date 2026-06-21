@@ -993,7 +993,7 @@ function escapeHtml(s){
   return s.replace(/[&<>"']/g, m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
 }
 
-function handleSend(){
+async function handleSend(){
   const text = input.value.trim();
   if(!text) return;
   collapseHero();
@@ -1019,12 +1019,42 @@ function handleSend(){
   thread.appendChild(typingMsg);
   window.scrollTo({top:document.body.scrollHeight, behavior:'smooth'});
 
-  setTimeout(()=>{
-    renderAssistantResponse(typingMsg, text);
-  }, 1000 + Math.random()*500);
+  // setTimeout(()=>{
+  //   renderAssistantResponse(typingMsg, text);
+  // }, 1000 + Math.random()*500);
+  try {
+    const response = await fetch("http://127.0.0.1:8000/chat", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            message: text
+        })
+    });
+
+    const data = await response.json();
+
+    renderAssistantResponse(typingMsg, data.response);
+
+} catch(error) {
+    console.error(error);
+}
 }
 
 function renderAssistantResponse(container, query){
+
+  container.innerHTML = `
+  <div class="assistant-label">
+    SignalSense
+  </div>
+  <div class="assistant-body">
+    <p>${query}</p>
+  </div>
+`;
+
+return;
+
   const wantsViz = activePrefs.has('visualization');
   const wantsNotes = activePrefs.has('notes');
   const wantsExpl = activePrefs.has('explanation');
