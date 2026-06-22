@@ -27,11 +27,12 @@ app.add_middleware(
 
 class ChatRequest(BaseModel):
     message: str
+    modes: list[str]
 
 
 @app.post("/chat")
 def chat(request: ChatRequest):
-    prompt = f"""
+    base_prompt = f"""
 You are SignalSense, an AI learning assistant designed specifically for Electronics and Telecommunication Engineering students.
 
 Your goal is to help students understand concepts intuitively.
@@ -42,13 +43,47 @@ Rules:
 - Avoid markdown formatting.
 - Avoid symbols like ## and **.
 - Keep responses structured and readable.
-- If the user asks for notes, provide detailed academic style notes.
-- If the user asks for explanation, explain in depth.
 
 User Query:
 {request.message}
 """
-    response = model.generate_content(prompt)
+    modes = request.modes
+    prompt_parts = []
+
+    if "notes" in modes:
+        prompt_parts.append("""
+Generate notes in academic way.
+
+Structure:
+1. Definition
+2. Formula(s)
+3. Conditions
+4. Applications
+5. Examples
+6. Summary
+
+Keep concise and exam-oriented.
+""")
+        
+    if "explanation" in modes:
+        prompt_parts.append("""
+Explain the concept intuitively.
+
+Rules:
+- Start with a real-world analogy.
+- Build intuition first.
+- Then explain technically.
+- Avoid textbook language.
+- Make it easy to understand.
+""")
+
+    final_prompt = (
+    base_prompt
+    + "\n\n"
+    + "\n".join(prompt_parts)
+    )
+
+    response = model.generate_content(final_prompt)
 
     return {
         "response": response.text

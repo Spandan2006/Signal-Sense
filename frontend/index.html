@@ -1029,7 +1029,8 @@ async function handleSend(){
             "Content-Type": "application/json"
         },
         body: JSON.stringify({
-            message: text
+            message: text,
+            modes: Array.from(activePrefs)
         })
     });
 
