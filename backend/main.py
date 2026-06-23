@@ -29,6 +29,21 @@ class ChatRequest(BaseModel):
     message: str
     modes: list[str]
 
+def detect_signal_type(message: str):
+
+    message = message.lower()
+
+    if "cosine" in message:
+        return "cosine"
+
+    elif "sine" in message:
+        return "sine"
+
+    elif "square" in message:
+        return "square"
+
+    return None
+
 
 @app.post("/chat")
 def chat(request: ChatRequest):
@@ -83,8 +98,10 @@ Rules:
     + "\n".join(prompt_parts)
     )
 
-    response = model.generate_content(final_prompt)
+    signal_type = detect_signal_type(request.message)
+    # response = model.generate_content(final_prompt)
 
     return {
-        "response": response.text
+        "response": "Testing 123",
+        "signal_type": signal_type
     }
